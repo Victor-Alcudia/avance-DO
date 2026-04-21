@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Despliegue de infraestructura base para Soluciones Tecnológicas del Futuro.
+
+Parameters:
+  KeyName:
+    Description: Nombre del par de llaves para SSH (usualmente vockey en Academy)
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: vockey
+
+Resources:
+  # 1. Bucket S3 para almacenamiento de datos
+  BucketFinanciero:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "soluciones-futuro-data-${AWS::AccountId}" # Nombre único global
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # 2. Grupo de Seguridad para la EC2
+  ServidorSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Permitir SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  # 3. Instancia EC2
+  ServidorApp:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}' # Amazon Linux 2023 en us-east-1
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref ServidorSecurityGroup
+      # Uso del LabRole predefinido en AWS Academy
+      IamInstanceProfile: "LabInstanceProfile"
+      Tags:
+        - Key: Name
+          Value: Servidor-Financiero-IaC
+        - Key: Proyecto
+          Value: SolucionesFuturo
+
+Outputs:
+  BucketName:
+    Description: Nombre del bucket creado
+    Value: !Ref BucketFinanciero
+  InstancePublicIP:
+    Description: IP publica de la instancia
+    Value: !GetAtt ServidorApp.PublicIp

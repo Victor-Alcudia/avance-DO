@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  web-app:
+    build: .
+    ports:
+      - "8080:80"
+    networks:
+      - red-financiera
+    volumes:
+      - web-logs:/var/log/nginx
+    depends_on:
+      - db-servicios
+
+  db-servicios:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: financiero_db
+      POSTGRES_PASSWORD: password_seguro
+    networks:
+      - red-financiera
+    volumes:
+      - datos-db:/var/lib/postgresql/data
+
+networks:
+  # Red personalizada para aislar el tráfico de la app
+  red-financiera:
+    driver: bridge
+
+volumes:
+  # Volúmenes para persistencia de datos y logs
+  web-logs:
+  datos-db:
