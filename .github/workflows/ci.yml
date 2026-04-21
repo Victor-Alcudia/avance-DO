@@ -11,8 +11,8 @@ jobs:
 
       - name: Instalación de dependencias
         run: |
-          chmod +x entorno-desarrollo-linux/install_deps.sh
-          entorno-desarrollo-linux/install_deps.sh
+          chmod +x devtools.sh
+          ./devtools.sh
 
       - name: Simulación de entorno de App
         run: |
